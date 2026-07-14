@@ -146,9 +146,19 @@ what happens next. This reply is what the student receives."""
 # ---------------------------------------------------------------------------
 # 3. Build the agent (cached so it survives Streamlit reruns).
 # ---------------------------------------------------------------------------
+def get_api_key():
+    """Read the key from Streamlit secrets (Cloud) or an env var (local/HF)."""
+    try:
+        if "OPENROUTER_KEY" in st.secrets:
+            return st.secrets["OPENROUTER_KEY"]
+    except Exception:
+        pass
+    return os.environ.get("OPENROUTER_KEY")
+
+
 @st.cache_resource
 def build_agent():
-    api_key = os.environ.get("OPENROUTER_KEY")
+    api_key = get_api_key()
     if not api_key:
         return None, None
 
@@ -198,8 +208,8 @@ agent, task_board = build_agent()
 
 if agent is None:
     st.error(
-        "OPENROUTER_KEY not set. Add it under **Settings → Variables and secrets** "
-        "on this Space, then restart."
+        "OPENROUTER_KEY not set. Add it under **Manage app → Settings → Secrets** "
+        "in TOML format:  `OPENROUTER_KEY = \"your-key\"`  then Save."
     )
     st.stop()
 
